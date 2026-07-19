@@ -1,0 +1,17 @@
+version: 1
+name: intentional invariant failure
+description: A small failure used to demonstrate artifacts, replay, and minimization.
+adapter: reference
+seed: failure-demo
+clients: [alice, bob]
+initial:
+  counter: 0
+steps:
+  - checkpoint: "before write"
+  - action:
+      client: alice
+      operation: { type: increment, path: [counter], by: 1 }
+  - settle: true
+  - checkpoint: "after sync"
+  - assert: { id: COUNTER_EXPECTED_TWO, type: all-equal, path: [counter], value: 2 }
+  - checkpoint: "unreachable expectation captured"

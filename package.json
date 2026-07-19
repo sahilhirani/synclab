@@ -1,0 +1,87 @@
+{
+  "name": "synclab",
+  "version": "0.1.0",
+  "description": "Deterministic chaos testing for local-first and collaborative applications.",
+  "type": "module",
+  "bin": {
+    "synclab": "./dist/cli.js"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./adapters/reference": {
+      "types": "./dist/adapters/reference.d.ts",
+      "import": "./dist/adapters/reference.js"
+    },
+    "./adapters/yjs": {
+      "types": "./dist/adapters/yjs.d.ts",
+      "import": "./dist/adapters/yjs.js"
+    },
+    "./adapters/automerge": {
+      "types": "./dist/adapters/automerge.d.ts",
+      "import": "./dist/adapters/automerge.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/**/*.test.ts",
+    "test:coverage": "tsx --test --experimental-test-coverage test/**/*.test.ts",
+    "test:examples": "npm run build && node scripts/test-examples.mjs",
+    "test:determinism": "tsx --test test/artifacts.test.ts test/runner.test.ts",
+    "check": "npm run typecheck && npm test && npm run build && npm run test:examples",
+    "pack:check": "npm pack --dry-run",
+    "pack:verify": "npm run build && node scripts/verify-package.mjs",
+    "prepack": "npm run build"
+  },
+  "engines": {
+    "node": ">=22.14"
+  },
+  "packageManager": "npm@11.12.1",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sahilhirani/synclab.git"
+  },
+  "bugs": {
+    "url": "https://github.com/sahilhirani/synclab/issues"
+  },
+  "homepage": "https://github.com/sahilhirani/synclab#readme",
+  "keywords": [
+    "local-first",
+    "crdt",
+    "chaos-testing",
+    "distributed-systems",
+    "yjs",
+    "automerge",
+    "testing",
+    "deterministic"
+  ],
+  "author": "Sahil Hirani",
+  "license": "Apache-2.0",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "@automerge/automerge": "3.3.2",
+    "yaml": "2.9.0",
+    "yjs": "13.6.31"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "tsx": "4.23.1",
+    "typescript": "7.0.2"
+  }
+}

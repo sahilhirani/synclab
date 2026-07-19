@@ -1,0 +1,16 @@
+version: 1
+name: custom adapter module
+adapter:
+  module: ./adapter.mjs
+  options: {}
+seed: custom-1
+clients: [left, right]
+initial:
+  status: "draft"
+steps:
+  - action:
+      client: left
+      operation: { type: set, path: [status], value: "published" }
+  - settle: true
+  - assert: { id: CUSTOM_CONVERGED, type: converged }
+  - assert: { id: CUSTOM_VALUE, type: all-equal, path: [status], value: "published" }

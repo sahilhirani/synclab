@@ -1,0 +1,33 @@
+version: 1
+name: automerge shopping list survives reconnect and reset
+adapter: automerge
+seed: groceries-2026
+clients: [phone, tablet, laptop]
+initial:
+  list: []
+  owners: {}
+  title: "Groceries"
+network:
+  latencyMs: { min: 10, max: 80 }
+  duplicateRate: 0.2
+  reorderRate: 0.5
+  reorderWindowMs: 50
+steps:
+  - partition:
+      groups: [[phone], [tablet, laptop]]
+  - parallel:
+      - client: phone
+        operation: { type: list-insert, path: [list], index: 0, values: ["coffee"] }
+      - client: tablet
+        operation: { type: list-insert, path: [list], index: 0, values: ["oat milk"] }
+      - client: laptop
+        operation: { type: set, path: [owners, laptop], value: "reviewed" }
+  - heal: true
+  - settle: true
+  - restart: tablet
+  - settle: true
+  - reset: laptop
+  - settle: true
+  - assert: { id: SYNC002, type: converged }
+  - assert: { id: SYNC009, type: no-pending }
+  - assert: { id: ITEMS, type: length, client: phone, path: [list], value: 2 }

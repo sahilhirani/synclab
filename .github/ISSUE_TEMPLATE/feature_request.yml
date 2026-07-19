@@ -1,0 +1,71 @@
+name: Feature request
+description: Propose a focused capability or improvement for SyncLab.
+title: "feat: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Strong proposals start with a concrete testing problem and explain why existing scenario operations or adapter hooks cannot solve it.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What local-first or collaborative testing problem are you trying to solve?
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the desired behavior and deterministic semantics.
+    validations:
+      required: true
+
+  - type: textarea
+    id: example
+    attributes:
+      label: Example API or scenario
+      description: Show how the capability would look in TypeScript or YAML.
+      render: yaml
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Explain workarounds, adapter-specific solutions, or existing tools you evaluated.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Scenario schema
+        - Deterministic runtime
+        - Network faults
+        - Assertions and replay
+        - Adapter SDK
+        - Yjs adapter
+        - Automerge adapter
+        - CLI and reporting
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I would be willing to help implement this feature.
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and proposals.
+          required: true
+        - label: The proposal preserves or explicitly addresses deterministic replay.
+          required: true

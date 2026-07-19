@@ -1,0 +1,41 @@
+version: 1
+name: partitioned notes converge
+description: Three offline writers reconnect over a duplicated and reordered link.
+adapter: yjs
+seed: notes-demo-42
+clients: [alice, bob, carol]
+initial:
+  title: "Field notes"
+  body: ""
+  edits: {}
+network:
+  latencyMs: { min: 5, max: 40 }
+  duplicateRate: 0.35
+  reorderRate: 0.6
+  reorderWindowMs: 30
+steps:
+  - partition:
+      groups: [[alice], [bob], [carol]]
+  - parallel:
+      - client: alice
+        operation: { type: set, path: [edits, alice], value: "drafted intro" }
+      - client: bob
+        operation: { type: set, path: [edits, bob], value: "added sources" }
+      - client: carol
+        operation: { type: set, path: [edits, carol], value: "fixed conclusion" }
+  - action:
+      client: alice
+      operation: { type: text-insert, path: [body], index: 0, text: "A" }
+  - action:
+      client: bob
+      operation: { type: text-insert, path: [body], index: 0, text: "B" }
+  - action:
+      client: carol
+      operation: { type: text-insert, path: [body], index: 0, text: "C" }
+  - heal: true
+  - settle: true
+  - assert: { id: SYNC002, type: converged }
+  - assert: { id: SYNC009, type: no-pending }
+  - assert: { id: BODY_A, type: contains, client: alice, path: [body], value: "A" }
+  - assert: { id: BODY_B, type: contains, client: alice, path: [body], value: "B" }
+  - assert: { id: BODY_C, type: contains, client: alice, path: [body], value: "C" }

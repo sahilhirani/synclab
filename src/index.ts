@@ -1,0 +1,10 @@
+export { automergeAdapter, builtInAdapters, referenceAdapter, resolveAdapter, yjsAdapter } from "./adapters/index.js";
+export { minimizeArtifact, readArtifact, replayArtifact, writeArtifact } from "./core/artifacts.js";
+export { canonicalize, canonicalStringify, hashValue, jsonEqual } from "./core/canonical.js";
+export { testAdapter } from "./core/conformance.js";
+export { ResourceLimitError, ScenarioValidationError, SyncLabError } from "./core/errors.js";
+export { exitCodeFor, renderReport, reportAsJson, reportAsJUnit, reportAsPretty } from "./core/reporters.js";
+export { runScenario, runScenarioReport, TRACE_FORMAT } from "./core/runner.js";
+export { defineScenario, loadScenario, validateScenario } from "./core/scenario.js";
+export { SYNCLAB_VERSION } from "./version.js";
+export type * from "./core/types.js";
