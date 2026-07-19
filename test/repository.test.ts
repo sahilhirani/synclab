@@ -5,7 +5,6 @@ import { dirname, extname, resolve } from "node:path";
 import { test } from "node:test";
 import { parse as parseYaml } from "yaml";
 import packageJson from "../package.json" with { type: "json" };
-import releaseManifest from "../.release-please-manifest.json" with { type: "json" };
 import { SYNCLAB_VERSION } from "../src/version.js";
 
 function collectStrings(value: unknown, output: string[] = []): string[] {
@@ -31,14 +30,21 @@ test("all GitHub workflows parse and pin third-party actions to immutable SHAs",
 });
 
 test("release workflow never publishes to npm before trusted publishing is configured", async () => {
-  const release = await readFile(resolve(".github/workflows/release-please.yml"), "utf8");
+  const release = await readFile(resolve(".github/workflows/release.yml"), "utf8");
   const executableLines = release.split(/\r?\n/).filter((line) => !line.trimStart().startsWith("#"));
   assert.equal(executableLines.some((line) => /npm\s+publish/.test(line)), false);
 });
 
-test("package, source, and release manifest versions agree", () => {
+test("tag-driven releases verify the package version before publishing", async () => {
+  const release = await readFile(resolve(".github/workflows/release.yml"), "utf8");
+  assert.match(release, /tags:\s*\n\s+- ["']v\*\.\*\.\*["']/);
+  assert.match(release, /GITHUB_REF_NAME/);
+  assert.match(release, /package_version/);
+  assert.match(release, /--verify-tag/);
+});
+
+test("package and source versions agree", () => {
   assert.equal(packageJson.version, SYNCLAB_VERSION);
-  assert.equal(releaseManifest["."], SYNCLAB_VERSION);
 });
 
 test("local Markdown links resolve", async () => {

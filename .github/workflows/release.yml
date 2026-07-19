@@ -2,40 +2,20 @@ name: Release
 
 on:
   push:
-    branches: [main]
-  workflow_dispatch:
+    tags:
+      - "v*.*.*"
 
 concurrency:
   group: release-${{ github.ref }}
   cancel-in-progress: false
 
+permissions: {}
+
 jobs:
-  release_please:
-    name: Prepare release
+  release:
+    name: Verify and publish GitHub release
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      issues: write
-      pull-requests: write
-    outputs:
-      release_created: ${{ steps.release.outputs.release_created }}
-      tag_name: ${{ steps.release.outputs.tag_name }}
-
-    steps:
-      - name: Create or update release pull request
-        id: release
-        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          config-file: release-please-config.json
-          manifest-file: .release-please-manifest.json
-
-  package:
-    name: Package GitHub release
-    needs: release_please
-    if: needs.release_please.outputs.release_created == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     permissions:
       contents: write
 
@@ -43,7 +23,7 @@ jobs:
       - name: Check out release tag
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
-          ref: ${{ needs.release_please.outputs.tag_name }}
+          ref: ${{ github.ref }}
           persist-credentials: false
 
       - name: Set up Node.js
@@ -51,6 +31,15 @@ jobs:
         with:
           node-version: "24.x"
           package-manager-cache: false
+
+      - name: Verify tag matches package version
+        shell: bash
+        run: |
+          package_version="$(node -p "require('./package.json').version")"
+          if [[ "$GITHUB_REF_NAME" != "v${package_version}" ]]; then
+            echo "Tag $GITHUB_REF_NAME does not match package version v${package_version}." >&2
+            exit 1
+          fi
 
       - name: Install dependencies
         run: npm ci
@@ -62,7 +51,8 @@ jobs:
         run: npm run pack:verify
 
       # npm publishing is intentionally omitted until npm Trusted Publishing is configured.
-      - name: Build package archive
+      - name: Build package archive and checksum
+        shell: bash
         run: |
           npm pack
           sha256sum synclab-*.tgz > SHA256SUMS
@@ -70,15 +60,25 @@ jobs:
       - name: Upload workflow artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: synclab-${{ needs.release_please.outputs.tag_name }}
+          name: synclab-${{ github.ref_name }}
           path: |
             synclab-*.tgz
             SHA256SUMS
           if-no-files-found: error
           retention-days: 90
 
-      - name: Attach package to GitHub release
+      - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG_NAME: ${{ needs.release_please.outputs.tag_name }}
-        run: gh release upload "$TAG_NAME" synclab-*.tgz SHA256SUMS --clobber
+        shell: bash
+        run: |
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" synclab-*.tgz SHA256SUMS --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              synclab-*.tgz \
+              SHA256SUMS \
+              --verify-tag \
+              --title "SyncLab $GITHUB_REF_NAME" \
+              --generate-notes
+          fi
