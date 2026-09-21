@@ -75,9 +75,9 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@automerge/automerge": "3.3.2",
-    "yaml": "2.9.0",
-    "yjs": "13.6.31"
+    "@automerge/automerge": "3.5.0",
+    "yaml": "2.9.1",
+    "yjs": "13.6.32"
   },
   "devDependencies": {
     "@types/node": "26.1.1",
